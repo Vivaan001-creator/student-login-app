@@ -158,6 +158,22 @@ function isLowerClass(classValue) {
   return lowerClassKeys.includes(key);
 }
 
+// classSubjects above uses keys like "Nursery"/"1", while
+// student.class can be stored as "Class 1", "class 1", "1", etc.
+// Normalize both sides the same way (used to be missing — this is
+// what let stray metadata fields on the result document render as
+// if they were subjects, see getSubjectsForClass()).
+const classSubjectsNormalized = {};
+Object.keys(classSubjects).forEach((k) => {
+  const normKey = k.toLowerCase().replace(/^class\s*/, "").trim();
+  classSubjectsNormalized[normKey] = classSubjects[k];
+});
+
+function getSubjectsForClass(classValue) {
+  const key = (classValue || "").toLowerCase().replace(/^class\s*/, "").trim();
+  return classSubjectsNormalized[key] || null;
+}
+
 function gradeForPercentage(pct) {
   if (pct >= 90) return "A1";
   if (pct >= 80) return "A2";
@@ -288,7 +304,23 @@ async function loadResult(month) {
   }
 
   const data = resultSnap.data();
-  const subjects = Object.entries(data);
+
+  // BUG FIX: this used to be Object.entries(data), which rendered
+  // EVERY field stored on the result document as if it were a
+  // subject — including bookkeeping fields the teacher's marks-entry
+  // page also saves on the same doc (updatedBy, updatedAt,
+  // studentRoll, etc). A Firestore Timestamp shown as "marks" is
+  // where the huge garbled numbers in the total/percentage came
+  // from. Now we only ever look up the real subjects for this
+  // student's class (same list classes.html / teacher-marks.html
+  // use), in the correct fixed order, defaulting to 0 for any
+  // subject not yet entered.
+  const validSubjectNames = getSubjectsForClass(student.class);
+  const subjects = validSubjectNames
+    ? validSubjectNames.map((s) => [s, data[s] !== undefined ? data[s] : 0])
+    : Object.entries(data).filter(([key]) =>
+        !["updatedBy", "updatedAt", "studentRoll", "publishedAt", "publishedBy", "publishStatus"].includes(key)
+      );
 
   if (subjects.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="5" class="empty-row">${escapeHtml(month)} ke liye koi subject marks nahi mile.</td></tr>`;

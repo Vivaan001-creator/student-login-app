@@ -361,7 +361,14 @@ async function loadStudentResult(roll, student, month) {
   let obtained = 0;
   let rows = "";
 
-  Object.entries(data).forEach(([subject, marks]) => {
+  // BUG FIX: this used to iterate Object.entries(data) directly,
+  // which also renders bookkeeping fields saved on the same result
+  // document (updatedBy, updatedAt, studentRoll, ...) as if they
+  // were subjects — a Firestore Timestamp shown as "marks" is what
+  // produced huge garbled totals. Skip those known non-subject keys.
+  const nonSubjectKeys = ["updatedBy", "updatedAt", "studentRoll", "publishedAt", "publishedBy", "publishStatus"];
+
+  Object.entries(data).filter(([key]) => !nonSubjectKeys.includes(key)).forEach(([subject, marks]) => {
     const score = Number(marks) || 0;
     total += maxMarks;
     obtained += score;
