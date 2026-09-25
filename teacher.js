@@ -305,11 +305,11 @@ const classSubjects = {
   "Nursery": ["English", "Math", "Hindi", "Rhymes", "G.K"],
   "L.K.G": ["English", "Math", "Hindi", "Rhymes", "G.K"],
   "U.K.G": ["English", "Math", "Hindi", "Rhymes", "G.K"],
-  "1": ["English", "Math", "Hindi", "Computer", "E.V.S", "G.K"],
-  "2": ["English", "Math", "Hindi", "Computer", "E.V.S", "G.K"],
-  "3": ["English", "Math", "Hindi", "Computer", "E.V.S", "G.K"],
-  "4": ["English", "Math", "Hindi", "Computer", "E.V.S", "G.K"],
-  "5": ["English", "Math", "Hindi", "Computer", "E.V.S", "G.K"],
+  "1": ["Science", "Social Studies", "Hindi", "English", "Math"],
+  "2": ["Science", "Social Studies", "Hindi", "English", "Math"],
+  "3": ["Science", "Social Studies", "Hindi", "English", "Math"],
+  "4": ["Science", "Social Studies", "Hindi", "English", "Math"],
+  "5": ["Science", "Social Studies", "Hindi", "English", "Math"],
   "6": ["English", "Math", "Hindi", "Science", "Social Studies"],
   "7": ["English", "Math", "Hindi", "Science", "Social Studies"],
   "8": ["English", "Math", "Hindi", "Science", "Social Studies"],
@@ -317,8 +317,17 @@ const classSubjects = {
   "10": ["English", "Math", "Hindi", "Science", "Social Studies"]
 };
 
-const lowerClasses = ["Nursery", "L.K.G", "U.K.G", "1", "2", "3", "4", "5"];
-const DEFAULT_SUBJECTS = ["English", "Math", "Hindi", "Science", "G.K"];
+// BUG FIX: this used to list "1".."5" here too, which (a) gave
+// classes 1-5 the wrong max/pass marks (50/17, the Nursery-L.K.G-U.K.G
+// scale, instead of the correct 60/20) and, combined with the
+// classSubjects entries above having briefly drifted out of sync
+// with admin.js/result.js, meant a class like "4" was shown
+// Computer/E.V.S/G.K fields in the marks modal instead of the
+// Science/Social Studies the rest of the app expects — so those two
+// subjects could never actually be entered, and always showed as 0
+// on the result. Only Nursery/L.K.G/U.K.G use the 50/17 scale.
+const lowerClasses = ["Nursery", "L.K.G", "U.K.G"];
+const DEFAULT_SUBJECTS = ["English", "Math", "Hindi", "Science", "Social Studies"];
 
 const MONTHS = [
   "June 2026", "July 2026", "August 2026", "September 2026", "October 2026",
@@ -918,8 +927,8 @@ async function loadHomeworkPage() {
       });
 
       // subjects vary by class (e.g. Nursery has Rhymes/G.K, not
-      // Computer/E.V.S) so the subject suggestions refresh whenever
-      // the selected class changes.
+      // Science/Social Studies) so the subject suggestions refresh
+      // whenever the selected class changes.
       classSelect.addEventListener("change", () => refreshSubjectsFor(classSelect.value));
       refreshSubjectsFor(classSelect.value);
 

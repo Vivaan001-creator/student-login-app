@@ -165,7 +165,7 @@ window.studentLogout = studentLogout;
 // and "1" to the same key since the Add Student form and the
 // Class Management page currently store these differently)
 // ==========================================================
-const lowerClassKeys = ["nursery", "l.k.g", "u.k.g", "1", "2", "3", "4", "5"];
+const lowerClassKeys = ["nursery", "l.k.g", "u.k.g"];
 
 function isLowerClass(classValue) {
   const key = (classValue || "").toLowerCase().replace(/^class\s*/, "").trim();
