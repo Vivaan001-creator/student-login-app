@@ -46,8 +46,9 @@
 
     if (linkMode) {
       const here = currentFile();
+      const activeOverride = opts.activeHref;
       mount.innerHTML = tabs.map(function (t) {
-        const isActive = t.href === here;
+        const isActive = activeOverride ? t.href === activeOverride : t.href === here;
         return (
           '<a href="' + t.href + '" class="bn-item' + (isActive ? ' bn-active' : '') + '">' +
             '<span class="bn-icon-wrap"><i class="fa-solid ' + t.icon + '"></i></span>' +
