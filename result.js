@@ -230,7 +230,17 @@ function currentMonthLabel() {
 // DOM refs
 // ==========================================================
 const tableBody = document.getElementById("marksTableBody");
-const monthSelect = document.getElementById("monthSelect");
+const monthLabel = document.getElementById("monthLabel");
+
+// The month was already chosen on the dashboard (Results tab) —
+// this page just shows that month's result, it doesn't offer a
+// second place to change it. Falls back to the current month only
+// if someone opens this page directly without going through the
+// dashboard first.
+function resolveMonth() {
+  const stored = localStorage.getItem("selectedMonth");
+  return stored && MONTHS.includes(stored) ? stored : currentMonthLabel();
+}
 
 let student = null;
 
@@ -260,21 +270,9 @@ async function init() {
   document.getElementById("studentSection").textContent = student.section || "-";
   document.getElementById("attendance").textContent = (student.attendance || "0") + "%";
 
-  populateMonths();
-  monthSelect.addEventListener("change", () => loadResult(monthSelect.value));
-
-  await loadResult(monthSelect.value);
-}
-
-function populateMonths() {
-  monthSelect.innerHTML = "";
-  MONTHS.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m;
-    monthSelect.appendChild(opt);
-  });
-  monthSelect.value = currentMonthLabel();
+  const month = resolveMonth();
+  monthLabel.textContent = month;
+  await loadResult(month);
 }
 
 async function loadResult(month) {
